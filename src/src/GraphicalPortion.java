@@ -50,7 +50,8 @@ public class GraphicalPortion extends JFrame {
 		super(applicationTitle);
                 token = auth_token;
 		datahistory = new Stack<PieDataset>();
-                ToolTipManager.sharedInstance().setInitialDelay(20);
+                ToolTipManager.sharedInstance().setInitialDelay(15);
+                 ToolTipManager.sharedInstance().setDismissDelay(200000);
 		handler = new DropBoxHandler(token, applicationTitle);
 		dirHistory = new Stack<String>();
                 //handler.getFilesInDir("/", 1);
