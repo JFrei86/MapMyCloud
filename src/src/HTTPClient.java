@@ -78,6 +78,7 @@ public class HTTPClient {
                     System.out.println("File: " + ent.asFile().name + " -- " + ent.asFile().humanSize);
                    }
                 }
+                dbhandler.getQuota();
                 
                 
 	}
