@@ -103,7 +103,7 @@ public class HTTPClient {
                    }
                 }*/
           //  dbhandler.getQuota();
-            GraphicalPortion gp = new GraphicalPortion("testinghackmit", "Your Dropbox:", auth_token);
+            GraphicalPortion gp = new GraphicalPortion("MapMyCloud", "Your Dropbox:", auth_token);
             gp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         	gp.setSize(800,600);
         	gp.pack();

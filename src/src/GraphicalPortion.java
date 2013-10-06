@@ -19,11 +19,13 @@ import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
 import com.dropbox.core.DbxEntry;
 import com.dropbox.core.DbxException;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ToolTipManager;
 import org.jfree.beans.events.CategoryItemClickEvent;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.entity.ChartEntity;
@@ -37,7 +39,6 @@ import org.jfree.data.general.DatasetChangeListener;
 
 public class GraphicalPortion extends JFrame {
 	private Object lastMouseOverKey = null;
-
 	private String token;
 	private DropBoxHandler handler;
         private String curDir;
@@ -50,6 +51,7 @@ public class GraphicalPortion extends JFrame {
 		super(applicationTitle);
                 token = auth_token;
 		datahistory = new Stack<PieDataset>();
+                ToolTipManager.sharedInstance().setInitialDelay(10);
 		handler = new DropBoxHandler(token, applicationTitle);
 		dirHistory = new Stack<String>();
                 //handler.getFilesInDir("/", 1);
@@ -75,20 +77,49 @@ public class GraphicalPortion extends JFrame {
 		
                 
                // panel.addch
+                panel.setPopupMenu(null);
+             
 		panel.addChartMouseListener(new ChartMouseListener(){
 
                         @Override
 			public void chartMouseClicked(ChartMouseEvent chartmouseevent)
                         {
+                                
+                               int button = chartmouseevent.getTrigger().getButton();
+                               System.out.println("Button: " + button);
                                PiePlot pplot = (PiePlot) chartmouseevent.getChart().getPlot();
                                 
-                                PieSectionEntity chartentity = (PieSectionEntity)chartmouseevent.getEntity();
+                                ChartEntity c = chartmouseevent.getEntity();
                                 //chartentity.
-                                if (chartentity != null)
+                                if (c != null && c instanceof PieSectionEntity)
                                 {
+                                    PieSectionEntity chartentity = (PieSectionEntity)c;
                                     //.get(chartentity.getSectionIndex()).
-                                        System.out.println("Mouse clicked: " + chartentity.toString());
+                                        //System.out.println("Mouse clicked: " + chartentity.toString());
                                        //System.out.println(chartentity.getSectionIndex());
+                                    if(button != 1)
+                                    {
+                                        
+                                     if(curDir == "/")   
+                                     {
+                                         return;
+                                     }
+                                     else
+                                     {
+                                        
+                                       if(!dirHistory.isEmpty())
+                                        { //gobackwards
+                                           dirHistory.push(curDir);
+                                           curDir = dirHistory.pop();//datatemp.get(chartentity.getSectionIndex()).path;
+                                           curDepth-=1;
+                                           DefaultPieDataset piesettemp = (DefaultPieDataset) datahistory.pop();
+                                           datahistory.push(pplot.getDataset());
+                                           pplot.setDataset(piesettemp);
+                                         
+                                         }
+                                    }
+                                       
+                                    }
                                        ArrayList<DbxEntry> datatemp = null;     
                                     try {
                                         datatemp = handler.getFilesInDir(curDir, curDepth);
@@ -111,15 +142,14 @@ public class GraphicalPortion extends JFrame {
                                             } catch (DbxException ex) {
                                                 Logger.getLogger(GraphicalPortion.class.getName()).log(Level.SEVERE, null, ex);
                                             }
-                                            System.out.println("done with refresh need to actually refresh");
-                                           
-                                           
+                                           // System.out.println("done with refresh need to actually refresh");
+                                      
                                        }
                                 }
-                                else
-                                        System.out.println("Mouse clicked: null entity.");
-                        }
-                        @Override
+                        }   
+                                
+                        
+                         @Override
                          public void chartMouseMoved(ChartMouseEvent event)
                         {
                             ChartEntity entity = event.getEntity();
@@ -132,6 +162,7 @@ public class GraphicalPortion extends JFrame {
                                     {	// Used to only fire mouseOver on mouseEnter events, not mouseMoved
                                             lastMouseOverKey = key;
                                             StandardPieToolTipGenerator tgen = new StandardPieToolTipGenerator();
+      
                                             tgen.generateToolTip(e.getDataset(), key);
                                             //e.setToolTipText(key);
                                     }
