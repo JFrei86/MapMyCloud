@@ -9,7 +9,7 @@ import java.util.Comparator;
 
 public class customComparator implements Comparator<String> {
     @Override
-    public int compare(String o1, String o2) {
+    public int compare(String o1, String o2) { //more / means deeper!
         if(StringUtils.countMatches(o1, "/") > StringUtils.countMatches(o2, "/")){
             return 1;
     }

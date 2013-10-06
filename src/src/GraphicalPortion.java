@@ -17,6 +17,7 @@ import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
 import com.dropbox.core.DbxEntry;
 import com.dropbox.core.DbxException;
+import java.io.IOException;
 
 
 
@@ -25,7 +26,7 @@ public class GraphicalPortion extends JFrame {
 	private String token;
 	private DropBoxHandler handler;
 	
-	public GraphicalPortion(String applicationTitle, String chartTitle, String auth_token) throws DbxException{
+	public GraphicalPortion(String applicationTitle, String chartTitle, String auth_token) throws DbxException, IOException{
 		super(applicationTitle);
                 token = auth_token;
 		
@@ -73,15 +74,7 @@ public class GraphicalPortion extends JFrame {
 		for(int i = 0; i < data.size(); i++){
                     if(data.get(i).isFolder())
                     {
-                        try {
-                            System.out.println("getting total folder size of folder: " + data.get(i).name);
-                            
-							dataset.setValue(data.get(i).name, handler.getFolderSize(data.get(i).path));
-			System.out.println("done getting total folder");			
-                        } catch (DbxException e) {
-                            System.out.println("caught");
-							e.printStackTrace();
-						}
+                       dataset.setValue(data.get(i).name,handler.folderHash.get(data.get(i).path));//should be max efficeny
                     }
                     else
                     {

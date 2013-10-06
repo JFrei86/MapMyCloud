@@ -22,6 +22,11 @@ import com.dropbox.core.DbxEntry;
 import com.dropbox.core.DbxDelta;
 import java.util.Hashtable;
 import com.dropbox.core.DbxPath;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map.*;
 import java.util.*;
 /**
@@ -33,25 +38,93 @@ public class DropBoxHandler {
     DbxClient client;
     ArrayList<DbxEntry.File> files; //#badjavapractices
     ArrayList<DbxEntry> nLevels;
-    Hashtable<String,Long> folderHash;
+    HashMap<String,Long> folderHash;
     ArrayList<String> allFolderNames;
     //ArrayList<String,long> foldercache;
     Long fSize;
    // ArrayList<DbxEntry.Folder> allFolders;
-    private void createHash() throws DbxException
+    private void loadHash(File file) throws IOException, ClassNotFoundException
+    { 
+        if(!file.exists())
+        {
+            return;
+        }
+        FileInputStream f = new FileInputStream(file);
+        ObjectInputStream s = new ObjectInputStream(f);
+        folderHash = (HashMap<String, Long>) s.readObject();
+        s.close();
+    }
+    private void saveHash(File file) throws IOException
     {
-        folderHash = new Hashtable<String,Long>();
+        if(file.exists())
+        {
+            file.delete();
+            file.createNewFile();
+        }
+        FileOutputStream f = new FileOutputStream(file);
+        ObjectOutputStream s = new ObjectOutputStream(f);
+        s.writeObject(folderHash);
+        s.close();
+    }
+    
+    private void createHash() throws DbxException, IOException, ClassNotFoundException
+    {
+        File file = new File("hashCache");
+        if(file.exists())
+        {
+            loadHash(file);
+            return;
+        }
+        folderHash = new HashMap<String,Long>();
         allFolderNames = new ArrayList<String>();
         allFolderNames.add("/");
+       
         getAllFolders("/");
         Collections.sort(allFolderNames, new customComparator());
         
         for(String path : allFolderNames) //optimized for efficeny
         {
-            folderHash.put(path,getFolderSize(path));
+            getFolderSize(path);
+            System.out.println(path);
+            folderHash.put(path,fSize);
         }
         
+        saveHash(file); //cache that hash
     }
+    
+    private void createHash(boolean update) throws DbxException, IOException, ClassNotFoundException
+    {
+        File file = new File("hashCache");
+        if(file.exists())
+        {
+            loadHash(file);
+            if(!update)
+            {
+                return;
+            }
+        }
+        
+        //folderHash = new HashMap<String,Long>();
+        allFolderNames = new ArrayList<String>();
+        allFolderNames.add("/");
+       
+        getAllFolders("/");
+        Collections.sort(allFolderNames, new customComparator());
+        
+        for(String path : allFolderNames) //optimized for efficeny
+        {
+            if(folderHash.containsKey(path))
+            {
+                continue;
+            }
+            getFolderSize(path);
+            System.out.println(path);
+            folderHash.put(path,fSize);
+        }
+        
+        saveHash(file); //cache that hash
+    }
+    
     public ArrayList<DbxEntry.File> getFiles() throws DbxException
     {
         getAllFiles();
@@ -104,11 +177,12 @@ public class DropBoxHandler {
             
         }
     }
-    public DropBoxHandler(String auth_token, String projName) throws DbxException
+    public DropBoxHandler(String auth_token, String projName) throws DbxException, IOException, ClassNotFoundException
     {
         DbxRequestConfig req_conf = new DbxRequestConfig(projName, Locale.getDefault().toString()); 
         client = new DbxClient(req_conf, auth_token);
         nLevels = new ArrayList<DbxEntry>();
+        createHash();
     }
     
     public void getFilesHelper(DbxEntry.Folder f) throws DbxException
@@ -135,8 +209,9 @@ public class DropBoxHandler {
         DbxEntry.WithChildren root = client.getMetadataWithChildren(dir);
         for(DbxEntry ent : root.children)
         {
-            if(ent.isFolder())
+            if(ent.isFolder() && !(folderHash.containsKey(ent.path)))
             {
+                System.out.println("Folder added: " + ent.path);
                 allFolderNames.add(ent.path);
                 getAllFolders(ent.path);
             }
@@ -161,7 +236,10 @@ public class DropBoxHandler {
     {
        DbxEntry.WithChildren root = client.getMetadataWithChildren(dir);
        
-      // if(root.children)
+       if(root.children.isEmpty())
+       {
+           return;
+    }
        for(DbxEntry ent : root.children)
        {
            if(folderHash.containsKey(ent.path))
