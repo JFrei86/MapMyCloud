@@ -4,6 +4,7 @@
  */
 package src;
 
+import com.dropbox.core.DbxAccountInfo;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,6 +33,14 @@ public class DropBoxHandler {
         return files;
     }
     
+    public long getQuota() throws DbxException
+    {
+        DbxAccountInfo accinfo = client.getAccountInfo();
+        System.out.println("Normal: " + accinfo.quota.normal);
+        System.out.println("Shared: " + accinfo.quota.shared);
+        System.out.println("Total: " + accinfo.quota.total);
+        return accinfo.quota.normal;
+    }
     public ArrayList<DbxEntry> getFilesInDir(String dir, int n) throws DbxException
     {
         nLevels = new ArrayList<>();
