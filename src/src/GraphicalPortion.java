@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot3D;
@@ -40,6 +42,14 @@ public class GraphicalPortion extends JFrame {
                 System.out.println("done creating dataset");
 		JFreeChart chart = createChart(dataset, chartTitle);
 		ChartPanel panel = new ChartPanel(chart);
+		panel.addChartMouseListener(new ChartMouseListener(){
+
+			public void chartMouseClicked(ChartMouseEvent arg0) {
+				(()arg0.getEntity())
+			}
+			public void chartMouseMoved(ChartMouseEvent arg0) {
+			}		
+		});
 		panel.setPreferredSize(new java.awt.Dimension(800,600));
 		this.setContentPane(panel);
 		
