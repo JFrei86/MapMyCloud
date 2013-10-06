@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import javax.swing.JFrame;
+
 import com.dropbox.core.DbxEntry;
 import com.dropbox.core.DbxAppInfo;
 import com.dropbox.core.DbxAuthFinish;
@@ -79,8 +81,11 @@ public class HTTPClient {
                    }
                 }
                 dbhandler.getQuota();
-                
-                
+                GraphicalPortion gp = new GraphicalPortion("MapMyCloud", "Your Dropbox:", files);
+                gp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        		gp.setSize(800,600);
+        		gp.pack();
+        		gp.setVisible(true);
 	}
 
 }
