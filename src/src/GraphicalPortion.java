@@ -35,7 +35,8 @@ public class GraphicalPortion extends JFrame {
                 data = handler.getFilesInDir("/", 1);
                 System.out.print("data size: ");
                 System.out.println(data.size());
-		PieDataset dataset = createDataset(data);
+                PieDataset dataset = createDataset(data);
+                ((DefaultPieDataset) dataset).setValue("Empty Space", handler.getFreeSpace());
                 System.out.println("done creating dataset");
 		JFreeChart chart = createChart(dataset, chartTitle);
 		ChartPanel panel = new ChartPanel(chart);
@@ -44,8 +45,17 @@ public class GraphicalPortion extends JFrame {
 		
 	}
 	private JFreeChart createChart(PieDataset dataset, String chartTitle) {
-		JFreeChart chart = ChartFactory.createPieChart(chartTitle, dataset);
-		return chart;
+		JFreeChart chart = ChartFactory.createPieChart3D(chartTitle,          // chart title
+	            dataset,                // data
+	            true,                   // include legend
+	            true,
+	            false);
+
+	        PiePlot3D plot = (PiePlot3D) chart.getPlot();
+	        plot.setStartAngle(290);
+	        plot.setForegroundAlpha(0.5f);
+	        plot.setDirection(Rotation.CLOCKWISE);
+	        return chart;
 	}
 	private PieDataset createDataset(ArrayList<DbxEntry> data) {
 		DefaultPieDataset dataset = new DefaultPieDataset();
