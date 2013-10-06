@@ -4,6 +4,7 @@
  */
 package src;
 
+import com.dropbox.core.DbxAccountInfo;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,9 +33,17 @@ public class DropBoxHandler {
         return files;
     }
     
+    public long getQuota() throws DbxException
+    {
+        DbxAccountInfo accinfo = client.getAccountInfo();
+        System.out.println("Normal: " + accinfo.quota.normal);
+        System.out.println("Shared: " + accinfo.quota.shared);
+        System.out.println("Total: " + accinfo.quota.total);
+        return accinfo.quota.normal;
+    }
     public ArrayList<DbxEntry> getFilesInDir(String dir, int n) throws DbxException
     {
-        nLevels = new ArrayList<>();
+        nLevels = new ArrayList<DbxEntry>();
         getFilesInDirHelper(dir,n);
         return nLevels;
         
@@ -68,7 +77,7 @@ public class DropBoxHandler {
     {
         DbxRequestConfig req_conf = new DbxRequestConfig(projName, Locale.getDefault().toString()); 
         client = new DbxClient(req_conf, auth_token);
-        nLevels = new ArrayList<>();
+        nLevels = new ArrayList<DbxEntry>();
         //System.out.println("dropbox handler creation success!");
         //getAllFiles(); //setups up master file list on construction #goodjavapractice
     }
@@ -101,7 +110,7 @@ public class DropBoxHandler {
      private void getAllFiles() throws DbxException
      {
          System.out.println("getting all files..");
-         files = new ArrayList<>();
+         files = new ArrayList<DbxEntry.File>();
        DbxEntry.WithChildren root = client.getMetadataWithChildren("/");
        
         for(DbxEntry ent : root.children)
