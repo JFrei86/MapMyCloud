@@ -83,9 +83,11 @@ public class HTTPClient {
                 dbhandler.getQuota();
                 GraphicalPortion gp = new GraphicalPortion("MapMyCloud", "Your Dropbox:", files);
                 gp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        		gp.setSize(800,600);
-        		gp.pack();
-        		gp.setVisible(true);
+        	gp.setSize(800,600);
+        	gp.pack();
+        	gp.setVisible(true);
+                
+                dbhandler.getFolderSize("/ds12");
 	}
 
 }
