@@ -80,6 +80,8 @@ public class HTTPClient {
                 }
                 dbhandler.getQuota();
                 
+                dbhandler.getFolderSize("/ds12");
+                
                 
 	}
 

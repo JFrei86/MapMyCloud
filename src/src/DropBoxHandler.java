@@ -26,6 +26,7 @@ public class DropBoxHandler {
     DbxClient client;
     ArrayList<DbxEntry.File> files; //#badjavapractices
     ArrayList<DbxEntry> nLevels;
+    long fSize;
     
     public ArrayList<DbxEntry.File> getFiles() throws DbxException
     {
@@ -36,10 +37,14 @@ public class DropBoxHandler {
     public long getQuota() throws DbxException
     {
         DbxAccountInfo accinfo = client.getAccountInfo();
-        System.out.println("Normal: " + accinfo.quota.normal);
-        System.out.println("Shared: " + accinfo.quota.shared);
-        System.out.println("Total: " + accinfo.quota.total);
+       
         return accinfo.quota.normal;
+    }
+    public long getFreeSpace() throws DbxException
+    {
+        DbxAccountInfo accinfo = client.getAccountInfo();
+        
+        return accinfo.quota.total;
     }
     public ArrayList<DbxEntry> getFilesInDir(String dir, int n) throws DbxException
     {
@@ -48,7 +53,7 @@ public class DropBoxHandler {
         return nLevels;
         
     }
-    public void getFilesInDirHelper(String dir, int n) throws DbxException
+    private void getFilesInDirHelper(String dir, int n) throws DbxException
     {
         if(n==0)
         {
@@ -64,9 +69,6 @@ public class DropBoxHandler {
                 }
                 else if(ent.isFolder())
                 {
-                    int temp = n - 1;
-                    String x = "" + temp; //java sucks -_-
-                    System.out.println("found folder, new n will be: " + x);
                     nLevels.add(ent);
                     getFilesInDirHelper(ent.path, n-1);
                 }
@@ -106,6 +108,29 @@ public class DropBoxHandler {
                 }
             }
         }
+    }
+    public long getFolderSize(String dir) throws DbxException
+    {
+        fSize = 0;
+        getSizeOfFolderHelper(dir);
+        System.out.print("Folder: " + dir + " -- ");
+        System.out.println(fSize);
+        return fSize;
+    }
+    private void getSizeOfFolderHelper(String dir) throws DbxException
+    {
+       DbxEntry.WithChildren root = client.getMetadataWithChildren(dir);
+       for(DbxEntry ent : root.children)
+       {
+           if(ent.isFile())
+           {
+               fSize += ent.asFile().numBytes;
+           }
+           else if(ent.isFolder())
+           {
+               getSizeOfFolderHelper(ent.path);
+           }
+       }
     }
      private void getAllFiles() throws DbxException
      {
