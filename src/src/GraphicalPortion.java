@@ -23,19 +23,25 @@ public class GraphicalPortion extends JFrame {
 	private String token;
 	private DropBoxHandler handler;
 	
-	public GraphicalPortion(String applicationTitle, String chartTitle, ArrayList<DbxEntry> data, String auth_token){
+	public GraphicalPortion(String applicationTitle, String chartTitle, String auth_token) throws DbxException{
 		super(applicationTitle);
+                token = auth_token;
+		
+		handler = new DropBoxHandler(token, applicationTitle);
+		
+                //handler.getFilesInDir("/", 1);
+                System.out.println("created dbhandler");
+                ArrayList<DbxEntry> data = new ArrayList<DbxEntry>();
+                data = handler.getFilesInDir("/", 1);
+                System.out.print("data size: ");
+                System.out.println(data.size());
 		PieDataset dataset = createDataset(data);
+                System.out.println("done creating dataset");
 		JFreeChart chart = createChart(dataset, chartTitle);
 		ChartPanel panel = new ChartPanel(chart);
 		panel.setPreferredSize(new java.awt.Dimension(800,600));
 		this.setContentPane(panel);
-		token = auth_token;
-		try {
-			handler = new DropBoxHandler(token, "MapMyCloud");
-		} catch (DbxException e) {
-			e.printStackTrace();
-		}
+		
 	}
 	private JFreeChart createChart(PieDataset dataset, String chartTitle) {
 		JFreeChart chart = ChartFactory.createPieChart(chartTitle, dataset);
@@ -48,23 +54,21 @@ public class GraphicalPortion extends JFrame {
                     if(data.get(i).isFolder())
                     {
                         try {
+                            System.out.println("getting total folder size of folder: " + data.get(i).name);
 							dataset.setValue(data.get(i).name, handler.getFolderSize(data.get(i).path));
-						} catch (DbxException e) {
+			System.out.println("done getting total folder");			
+                        } catch (DbxException e) {
+                            System.out.println("caught");
 							e.printStackTrace();
 						}
                     }
                     else
                     {
+                        System.out.println("getting file size");
                     	dataset.setValue(data.get(i).name, data.get(i).asFile().numBytes);
                     }
 		}
 		return dataset;
 	}
-	public static void main(String[] args){
-		GraphicalPortion gp = new GraphicalPortion("Application Title", "Your Dropbox:", null, null);
-		gp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gp.setSize(800,600);
-		gp.pack();
-		gp.setVisible(true);
-	}
+	
 }

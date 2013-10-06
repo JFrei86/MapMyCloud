@@ -67,8 +67,8 @@ public class HTTPClient {
                 }
         }
 	public static void main(String[] args) throws IOException, DbxException {
-		String auth_token = HTTPClient.authorize("j8p8yz7est7tuo2", "fpbth7k4fft8kcs");
-            DropBoxHandler dbhandler = new DropBoxHandler(auth_token,"MapMyCloud");
+		String auth_token = HTTPClient.authorize("k43q7eqwl6jialx", "k67mwnb3jjr8x6y");
+            DropBoxHandler dbhandler = new DropBoxHandler(auth_token,"testinghackmit");
             ArrayList<DbxEntry> files = dbhandler.getFilesInDir("/",1);
                 for(DbxEntry ent : files)
                 {
@@ -81,12 +81,12 @@ public class HTTPClient {
                    }
                 }
             dbhandler.getQuota();
-            GraphicalPortion gp = new GraphicalPortion("MapMyCloud", "Your Dropbox:", files, auth_token);
+            GraphicalPortion gp = new GraphicalPortion("testinghackmit", "Your Dropbox:", auth_token);
             gp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         	gp.setSize(800,600);
         	gp.pack();
         	gp.setVisible(true);
-            dbhandler.getFolderSize("/");
+            //dbhandler.getFolderSize("/");
 	}
 
 }
