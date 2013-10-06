@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot3D;
@@ -35,17 +37,35 @@ public class GraphicalPortion extends JFrame {
                 data = handler.getFilesInDir("/", 1);
                 System.out.print("data size: ");
                 System.out.println(data.size());
-		PieDataset dataset = createDataset(data);
+                PieDataset dataset = createDataset(data);
+                ((DefaultPieDataset) dataset).setValue("Empty Space", handler.getFreeSpace());
                 System.out.println("done creating dataset");
 		JFreeChart chart = createChart(dataset, chartTitle);
 		ChartPanel panel = new ChartPanel(chart);
+		panel.addChartMouseListener(new ChartMouseListener(){
+
+			public void chartMouseClicked(ChartMouseEvent arg0) {
+				//(arg0.getEntity());
+			}
+			public void chartMouseMoved(ChartMouseEvent arg0) {
+			}		
+		});
 		panel.setPreferredSize(new java.awt.Dimension(800,600));
 		this.setContentPane(panel);
 		
 	}
 	private JFreeChart createChart(PieDataset dataset, String chartTitle) {
-		JFreeChart chart = ChartFactory.createPieChart(chartTitle, dataset);
-		return chart;
+		JFreeChart chart = ChartFactory.createPieChart3D(chartTitle,          // chart title
+	            dataset,                // data
+	            true,                   // include legend
+	            true,
+	            false);
+
+	        PiePlot3D plot = (PiePlot3D) chart.getPlot();
+	        plot.setStartAngle(290);
+	        plot.setForegroundAlpha(0.5f);
+	        plot.setDirection(Rotation.CLOCKWISE);
+	        return chart;
 	}
 	private PieDataset createDataset(ArrayList<DbxEntry> data) {
 		DefaultPieDataset dataset = new DefaultPieDataset();
@@ -55,6 +75,7 @@ public class GraphicalPortion extends JFrame {
                     {
                         try {
                             System.out.println("getting total folder size of folder: " + data.get(i).name);
+                            
 							dataset.setValue(data.get(i).name, handler.getFolderSize(data.get(i).path));
 			System.out.println("done getting total folder");			
                         } catch (DbxException e) {

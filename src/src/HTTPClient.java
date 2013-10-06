@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
-
+import java.io.*;
+import java.util.Scanner;
 import javax.swing.JFrame;
 
 import com.dropbox.core.DbxEntry;
@@ -26,6 +27,8 @@ public class HTTPClient {
         DbxWebAuthNoRedirect webAuth = new DbxWebAuthNoRedirect(requestConfig, appInfo);
 
         String authorizeUrl = webAuth.start();
+        System.out.println("One time only initial setup... \n");
+        System.out.println("1. Go to:");
         System.out.println(authorizeUrl);
         System.out.println("2. Click \"Allow\" (you might have to log in first).");
         System.out.println("3. Copy the authorization code.");
@@ -67,10 +70,29 @@ public class HTTPClient {
                 }
         }
 	public static void main(String[] args) throws IOException, DbxException {
-		String auth_token = HTTPClient.authorize("k43q7eqwl6jialx", "k67mwnb3jjr8x6y");
+            
+        String auth_token;
+  
+            File authFile = new File("authtoken.txt");
+            if(!authFile.exists())
+            {
+                auth_token = HTTPClient.authorize("k43q7eqwl6jialx", "k67mwnb3jjr8x6y");
+                FileWriter fw = new FileWriter(authFile);
+                fw.write(auth_token);
+                fw.close();
+            }
+            else
+            {
+                Scanner s = new Scanner(authFile);
+                auth_token = s.next();
+                System.out.println("authtoken read from file: " + auth_token);
+                s.close();
+                
+            }
+           
             DropBoxHandler dbhandler = new DropBoxHandler(auth_token,"testinghackmit");
             ArrayList<DbxEntry> files = dbhandler.getFilesInDir("/",1);
-                for(DbxEntry ent : files)
+               /* for(DbxEntry ent : files)
                 {
                    if(ent.isFolder())
                    {
@@ -79,8 +101,8 @@ public class HTTPClient {
                    else{
                     System.out.println("File: " + ent.asFile().name + " -- " + ent.asFile().humanSize);
                    }
-                }
-            dbhandler.getQuota();
+                }*/
+          //  dbhandler.getQuota();
             GraphicalPortion gp = new GraphicalPortion("testinghackmit", "Your Dropbox:", auth_token);
             gp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         	gp.setSize(800,600);

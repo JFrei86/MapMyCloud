@@ -4,6 +4,7 @@
  */
 package src;
 
+import org.apache.commons.lang3.StringUtils;
 import com.dropbox.core.DbxAccountInfo;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,16 +19,39 @@ import com.dropbox.core.DbxClient;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.DbxEntry;
+import com.dropbox.core.DbxDelta;
+import java.util.Hashtable;
+import com.dropbox.core.DbxPath;
+import java.util.Map.*;
+import java.util.*;
 /**
  *
  * @author Michael
  */
+
 public class DropBoxHandler {
     DbxClient client;
     ArrayList<DbxEntry.File> files; //#badjavapractices
     ArrayList<DbxEntry> nLevels;
-    long fSize;
-    
+    Hashtable<String,Long> folderHash;
+    ArrayList<String> allFolderNames;
+    //ArrayList<String,long> foldercache;
+    Long fSize;
+   // ArrayList<DbxEntry.Folder> allFolders;
+    private void createHash() throws DbxException
+    {
+        folderHash = new Hashtable<String,Long>();
+        allFolderNames = new ArrayList<String>();
+        allFolderNames.add("/");
+        getAllFolders("/");
+        Collections.sort(allFolderNames, new customComparator());
+        
+        for(String path : allFolderNames) //optimized for efficeny
+        {
+            folderHash.put(path,getFolderSize(path));
+        }
+        
+    }
     public ArrayList<DbxEntry.File> getFiles() throws DbxException
     {
         getAllFiles();
@@ -62,6 +86,10 @@ public class DropBoxHandler {
         else
         {
             DbxEntry.WithChildren root = client.getMetadataWithChildren(dir);
+            if(root.children.isEmpty())
+            {
+                return; //no childs you got to the end
+            }
             for(DbxEntry ent : root.children)
             {
                 if(ent.isFile()){
@@ -73,6 +101,7 @@ public class DropBoxHandler {
                     getFilesInDirHelper(ent.path, n-1);
                 }
             }
+            
         }
     }
     public DropBoxHandler(String auth_token, String projName) throws DbxException
@@ -80,14 +109,6 @@ public class DropBoxHandler {
         DbxRequestConfig req_conf = new DbxRequestConfig(projName, Locale.getDefault().toString()); 
         client = new DbxClient(req_conf, auth_token);
         nLevels = new ArrayList<DbxEntry>();
-        //System.out.println("dropbox handler creation success!");
-        //getAllFiles(); //setups up master file list on construction #goodjavapractice
-    }
-    
-    public DropBoxHandler(DbxClient c) throws DbxException
-    {
-        client = c;
-        //getAllFiles(); //setups up master file list on construction #goodjavapractice
     }
     
     public void getFilesHelper(DbxEntry.Folder f) throws DbxException
@@ -109,26 +130,49 @@ public class DropBoxHandler {
             }
         }
     }
-    public long getFolderSize(String dir) throws DbxException
+    private void getAllFolders(String dir) throws DbxException
     {
-        fSize = 0;
+        DbxEntry.WithChildren root = client.getMetadataWithChildren(dir);
+        for(DbxEntry ent : root.children)
+        {
+            if(ent.isFolder())
+            {
+                allFolderNames.add(ent.path);
+                getAllFolders(ent.path);
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    
+    public Long getFolderSize(String dir) throws DbxException
+    {
+        //Long l = new Long();
+        fSize = new Long(0);
+   
         getSizeOfFolderHelper(dir);
-        System.out.print("Folder: " + dir + " -- ");
-        System.out.println(fSize);
-        return fSize;
+        //System.out.print("Folder: " + dir + " -- ");
+       // System.out.println(fSize);
+       return fSize;
     }
     private void getSizeOfFolderHelper(String dir) throws DbxException
     {
        DbxEntry.WithChildren root = client.getMetadataWithChildren(dir);
+       
+      // if(root.children)
        for(DbxEntry ent : root.children)
        {
-           if(ent.isFile())
+           if(folderHash.containsKey(ent.path))
+           {
+               fSize += folderHash.get(ent.path); //basically saves time by using previously summed lower directories
+           }
+          
+          //should never need an else to handle adding new folders, since only files provide a size
+           else if(ent.isFile())
            {
                fSize += ent.asFile().numBytes;
-           }
-           else if(ent.isFolder())
-           {
-               getSizeOfFolderHelper(ent.path);
            }
        }
     }
