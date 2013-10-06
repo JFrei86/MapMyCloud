@@ -69,11 +69,11 @@ public class HTTPClient {
                    }
                 }
         }
-	public static void main(String[] args) throws IOException, DbxException {
+	public static void main(String[] args) throws IOException, DbxException, ClassNotFoundException {
             
         String auth_token;
   
-            File authFile = new File("authtoken.txt");
+            File authFile = new File("authtoken");
             if(!authFile.exists())
             {
                 auth_token = HTTPClient.authorize("k43q7eqwl6jialx", "k67mwnb3jjr8x6y");

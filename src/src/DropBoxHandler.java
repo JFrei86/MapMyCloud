@@ -39,6 +39,7 @@ public class DropBoxHandler {
     ArrayList<DbxEntry.File> files; //#badjavapractices
     ArrayList<DbxEntry> nLevels;
     HashMap<String,Long> folderHash;
+    HashMap<String,Long> fileHash;
     ArrayList<String> allFolderNames;
     //ArrayList<String,long> foldercache;
     Long fSize;
@@ -67,6 +68,27 @@ public class DropBoxHandler {
         s.close();
     }
     
+    private void createFileHash() throws DbxException, IOException, ClassNotFoundException
+    {
+        File file = new File("fileHashCache");
+        if(file.exists())
+        {
+            loadHash(file);
+            return;
+        }
+        fileHash = new HashMap<String,Long>();
+        
+        
+        for(String path : allFolderNames) //optimized for efficeny
+        {
+            getFolderSize(path);
+            System.out.println(path);
+            folderHash.put(path,fSize);
+        }
+        
+        saveHash(file); //cache that hash
+    }
+    
     private void createHash() throws DbxException, IOException, ClassNotFoundException
     {
         File file = new File("hashCache");
@@ -81,7 +103,7 @@ public class DropBoxHandler {
        
         getAllFolders("/");
         Collections.sort(allFolderNames, new customComparator());
-        
+        //allFolderNames.
         for(String path : allFolderNames) //optimized for efficeny
         {
             getFolderSize(path);
