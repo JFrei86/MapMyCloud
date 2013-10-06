@@ -109,7 +109,7 @@ public class DropBoxHandler {
     }
      private void getAllFiles() throws DbxException
      {
-         System.out.println("getting all files..");
+         System.out.println("getting all files.."); 
          files = new ArrayList<DbxEntry.File>();
        DbxEntry.WithChildren root = client.getMetadataWithChildren("/");
        
