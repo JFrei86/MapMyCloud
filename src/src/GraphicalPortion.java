@@ -12,8 +12,7 @@ import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot;
-import org.jfree.beans.JPieChart;
-import org.jfree.beans.JPieChartBeanInfo;
+
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.util.Rotation;
@@ -26,12 +25,12 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ToolTipManager;
-import org.jfree.beans.events.CategoryItemClickEvent;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.PieSectionEntity;
 import org.jfree.chart.event.ChartChangeEvent;
 import org.jfree.chart.labels.StandardPieToolTipGenerator;
+import org.jfree.chart.plot.PiePlot3D;
 import org.jfree.data.general.DatasetChangeEvent;
 import org.jfree.data.general.DatasetChangeListener;
 
@@ -51,7 +50,7 @@ public class GraphicalPortion extends JFrame {
 		super(applicationTitle);
                 token = auth_token;
 		datahistory = new Stack<PieDataset>();
-                ToolTipManager.sharedInstance().setInitialDelay(10);
+                ToolTipManager.sharedInstance().setInitialDelay(20);
 		handler = new DropBoxHandler(token, applicationTitle);
 		dirHistory = new Stack<String>();
                 //handler.getFilesInDir("/", 1);
@@ -97,7 +96,7 @@ public class GraphicalPortion extends JFrame {
                                     //.get(chartentity.getSectionIndex()).
                                         //System.out.println("Mouse clicked: " + chartentity.toString());
                                        //System.out.println(chartentity.getSectionIndex());
-                                    if(button != 1)
+                                    if(button == 3)
                                     {
                                         
                                      if(curDir == "/")   
@@ -109,11 +108,12 @@ public class GraphicalPortion extends JFrame {
                                         
                                        if(!dirHistory.isEmpty())
                                         { //gobackwards
-                                           dirHistory.push(curDir);
+                                          //String cdir = new String(curDir);
                                            curDir = dirHistory.pop();//datatemp.get(chartentity.getSectionIndex()).path;
+                                           //dirHistory.push(new String(cdir));
                                            curDepth-=1;
                                            DefaultPieDataset piesettemp = (DefaultPieDataset) datahistory.pop();
-                                           datahistory.push(pplot.getDataset());
+                                          // datahistory.push(new DefaultPieDataset(pplot.getDataset()));
                                            pplot.setDataset(piesettemp);
                                          
                                          }
@@ -128,10 +128,11 @@ public class GraphicalPortion extends JFrame {
                                     }
                                        if(datatemp.get(chartentity.getSectionIndex()).isFolder())
                                        {
-                                           dirHistory.push(curDir);
+                                           //curDir = dirHistory.pop();//datatemp.get(chartentity.getSectionIndex()).path;
+                                           dirHistory.push(new String(curDir));
                                            curDir = datatemp.get(chartentity.getSectionIndex()).path;
                                            curDepth+=1;
-                                           datahistory.push(pplot.getDataset());
+                                           datahistory.push(new DefaultPieDataset(pplot.getDataset()));
                                             try {
                                                 datatemp = handler.getFilesInDir(curDir, curDepth);
                                             } catch (DbxException ex) {
@@ -183,7 +184,7 @@ public class GraphicalPortion extends JFrame {
          
 	private JFreeChart createChart(PieDataset dataset, String chartTitle)
         {
-             JFreeChart chart = ChartFactory.createPieChart(chartTitle, dataset, false, true, false);
+             JFreeChart chart = ChartFactory.createPieChart3D(chartTitle, dataset, false, true, false);
             
 		/*JFreeChart chart = ChartFactory.createPieChart(chartTitle,          // chart title
 	            dataset,                // data
@@ -191,9 +192,11 @@ public class GraphicalPortion extends JFrame {
 	            true,
 	            false);*/
 
-	        PiePlot plot = (PiePlot) chart.getPlot();
+	        PiePlot3D plot = (PiePlot3D) chart.getPlot();
+                plot.setDepthFactor(.3);
                 plot.setLabelGenerator(null);
-	        
+               
+	        plot.setBackgroundPaint(Color.white);
 	        //plot.setForegroundAlpha(0.5f);
 	        //plot.setDirection(Rotation.CLOCKWISE);
 	        return chart;

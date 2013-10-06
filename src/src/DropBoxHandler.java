@@ -41,6 +41,7 @@ public class DropBoxHandler {
     HashMap<String,Long> folderHash;
     HashMap<String,Long> fileHash;
     ArrayList<String> allFolderNames;
+    ArrayList<String> allFolderNamesRelativePaths = new ArrayList<String>();
     //ArrayList<String,long> foldercache;
     Long fSize;
    // ArrayList<DbxEntry.Folder> allFolders;
@@ -54,6 +55,17 @@ public class DropBoxHandler {
         ObjectInputStream s = new ObjectInputStream(f);
         folderHash = (HashMap<String, Long>) s.readObject();
         s.close();
+    }
+    public boolean isValidFolder(String x)
+    {
+        if(allFolderNamesRelativePaths.contains(x))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     private void saveHash(File file) throws IOException
     {
@@ -234,6 +246,7 @@ public class DropBoxHandler {
             if(ent.isFolder() && !(folderHash.containsKey(ent.path)))
             {
                 System.out.println("Folder added: " + ent.path);
+                allFolderNamesRelativePaths.add(ent.name);
                 allFolderNames.add(ent.path);
                 getAllFolders(ent.path);
             }
